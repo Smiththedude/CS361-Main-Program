@@ -1,0 +1,166 @@
+import json
+import pathlib
+from art import text2art
+
+class PathFinderCharacter:
+      def __init__(self):
+            self.name = ""
+            self.race = ""
+            self.class_type = ""
+            self.level = 1
+            self.alignment = ""
+            self.abilities = {
+                  'Strength': 10,
+                  'Dexterity': 10,
+                  'Constitution': 10,
+                  'Intelligence': 10,
+                  'Wisdom': 10,
+                  'Charisma': 10
+            }
+            self.skills = {}
+            self.equipment = []
+
+      def input_basic_info(self):
+            print("\nFollow the prompts to fill out your character's stats.")
+            print("You may enter 'quit' at any time to return to the menu\n.")
+            self.name = input("Enter character's name: ")
+            self.race = input("Enter character's race: ")
+            self.class_type = input("Enter character's class: ")
+            self.level = int(input("Enter character's level: "))
+            self.alignment = input("Enter character's alignment: ")
+
+      def input_abilities(self):
+            print("Enter ability scores (1-20). Default is 10.")
+            for ability in self.abilities:
+                  score = input(f"Enter {ability} score: ")
+                  if score:
+                        self.abilities[ability] = int(score)
+
+      def input_skills(self):
+            print("Enter character's skills (or leave blank to skip):")
+            while True:
+                  skill = input("Enter skill name (or 'done' to finish): ")
+                  if skill.lower() == 'done':
+                        break
+                  points = input(f"Enter points for {skill}: ")
+                  if points:
+                        self.skills[skill] = int(points)
+
+      def input_equipment(self):
+            print("Enter character's equipment (or leave blank to skip):")
+            while True:
+                  item = input("Enter equipment item (or 'done' to finish): ")
+                  if item.lower() == 'done':
+                        break
+                  self.equipment.append(item)
+
+      def save_character(self, filename):
+            dir_path = pathlib.Path(r"C:\PythonFinder")
+            if not dir_path.exists():
+                  dir_path.mkdir(parents=True, exist_ok=False)
+
+            character_data = {
+                  'name': self.name,
+                  'race': self.race,
+                  'class': self.class_type,
+                  'level': self.level,
+                  'alignment': self.alignment,
+                  'abilities': self.abilities,
+                  'skills': self.skills,
+                  'equipment': self.equipment
+            }
+
+            filePath = dir_path / filename
+
+            with open(filePath, 'w') as file:
+                  json.dump(character_data, file, indent=4)
+            print(f"Character saved to {filePath}")
+
+      def view_character(self):
+            print("\n--- Character Sheet ---")
+            print(f"Name: {self.name}")
+            print(f"Race: {self.race}")
+            print(f"Class: {self.class_type}")
+            print(f"Level: {self.level}")
+            print(f"Alignment: {self.alignment}")
+            print("\n--- Abilities ---")
+            for ability, score in self.abilities.items():
+                  print(f"{ability}: {score}")
+            print("\n--- Skills ---")
+            if self.skills:
+                  for skill, points in self.skills.items():
+                        print(f"{skill}: {points}")
+            else:
+                  print("No skills recorded.")
+            print("\n--- Equipment ---")
+            if self.equipment:
+                  for item in self.equipment:
+                        print(f"- {item}")
+            else:
+                  print("No equipment recorded.")
+            print("\n----------------------")
+
+
+def main():
+      ascii_title = text2art("PythonFinder")
+      print(ascii_title)
+
+      # Menu loop
+      while True:
+            print("Welcome to PythonFinder! This program will allow you to perform any function that"
+                  "be required of a DM, while \nalso allowing you to keep all of your work organized, "
+                  "and quickly find any information that you may need \nregarding rules, enemies, or "
+                  "even locations and NPCs!\n")
+            print("To get started, type the number corresponding to your desired option and hit enter.\n")
+            print("1. Create New Character Sheet")
+            print("2. View Character Sheet")
+            print("3. Exit PythonFinder")
+            choice = input("Enter your choice: ")
+
+            if choice == "1":
+                  # Create a new character sheet
+                  character = PathFinderCharacter()
+                  character.input_basic_info()
+                  character.input_abilities()
+                  character.input_skills()
+                  character.input_equipment()
+
+                  # Save the character sheet
+                  name = input("Enter a name for your sheet: ")
+                  filename = name + ".json"
+                  character.save_character(filename)
+
+            elif choice == "2":
+                  # View an existing character sheet
+                  name = input("Enter the name of the sheet you'd like to see: ")
+                  dir_path = pathlib.Path(r"C:\PythonFinder")
+                  filename = name + ".json"
+                  filePath = dir_path / filename
+                  try:
+                        with open(filePath, 'r') as file:
+                              character_data = json.load(file)
+                              character = PathFinderCharacter()
+                              character.name = character_data['name']
+                              character.race = character_data['race']
+                              character.class_type = character_data['class']
+                              character.level = character_data['level']
+                              character.alignment = character_data['alignment']
+                              character.abilities = character_data['abilities']
+                              character.skills = character_data['skills']
+                              character.equipment = character_data['equipment']
+                              character.view_character()
+                  except FileNotFoundError:
+                        print(f"Error: File {filename} not found.")
+                  except json.JSONDecodeError:
+                        print("Error: Could not decode the character file. It may be corrupted.")
+
+            elif choice == "3":
+                  print("Goodbye!")
+                  break
+
+            else:
+                  print("Invalid option. Please choose again.")
+
+
+if __name__ == "__main__":
+      main()
